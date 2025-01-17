@@ -1,0 +1,40 @@
+# การตั้งค่าสำหรับแต่ละโลก
+worlds:
+  ori:
+    enabled: true
+    amount: 10
+    min-height: 70
+    max-height: 100
+    fall-speed-min: 0.02
+    fall-speed-max: 0.05
+    wind-speed-min: 0.01
+    wind-speed-max: 0.03
+    size-min: 0.5
+    size-max: 2.0
+
+  world_nether:
+    enabled: false
+
+  world_the_end:
+    enabled: false  # ปิดการใช้งานในโลก End
+
+# จำนวนใบไม้ที่จะสร้างต่อรอบ
+amount: 10
+
+# ความสูงต่ำสุดและสูงสุดที่ใบไม้จะปรากฏ
+min-height: 70
+max-height: 100
+
+# ความเร็วในการตก
+fall-speed-min: 0.05
+fall-speed-max: 0.15
+
+# ความเร็วลม
+wind-speed-min: 0.01
+wind-speed-max: 0.03
+
+# ขนาดของใบไม้ (0.5 = ครึ่งขนาดปกติ, 1.0 = ขนาดปกติ, 2.0 = สองเท่า)
+size-min: 0.5
+size-max: 2.0
+
+# SYSTEM BY ZPLEUM SUD XAO

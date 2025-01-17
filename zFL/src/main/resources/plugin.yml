@@ -1,0 +1,6 @@
+name: zFL
+version: '1.0'
+author: zPleum
+description: The Falling Leaves Plugin
+main: me.zpleum.zFL.ZFL
+api-version: '1.21'
