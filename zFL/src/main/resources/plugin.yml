@@ -1,6 +1,6 @@
 name: zFL
-version: '1.0'
-author: zPleum
-description: The Falling Leaves Plugin
+version: '1.2'
+description: Made On Earth By Human, By zPleum, THIS IS MY COPYRIGHT
+website: https://wiraphat.onrender.com/
 main: me.zpleum.zFL.ZFL
 api-version: '1.21'

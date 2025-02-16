@@ -1,10 +1,10 @@
 # การตั้งค่าสำหรับแต่ละโลก
 worlds:
-  ori:
+  sakura:
     enabled: true
-    amount: 10
-    min-height: 70
-    max-height: 100
+    amount: 20
+    min-height: 90
+    max-height: 130
     fall-speed-min: 0.02
     fall-speed-max: 0.05
     wind-speed-min: 0.01

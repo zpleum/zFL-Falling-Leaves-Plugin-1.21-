@@ -12,11 +12,18 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.EulerAngle;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 public class ZFL extends JavaPlugin {
+    private static final int MAX_LEAVES_MULTIPLIER = 5;
+    private static final int MIN_LEAVES_SPAWN = 2;
+    private static final int MAX_LEAVES_SPAWN = 4;
+    private static final int GROUND_REMOVAL_DELAY = 100;
+
     private final Random random = new Random();
     private final Map<String, WorldLeafConfig> worldConfigs = new HashMap<>();
     private final Map<String, List<FallingLeaf>> activeLeavesByWorld = new HashMap<>();
+    private final Logger logger = getLogger();
     private int taskId;
 
     @Override
@@ -25,7 +32,7 @@ public class ZFL extends JavaPlugin {
         loadConfig();
         clearOldLeaves();
 
-        taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
+        taskId = Bukkit.getScheduler().runTaskTimer(this, () -> {
             for (String worldName : worldConfigs.keySet()) {
                 World world = Bukkit.getWorld(worldName);
                 if (world != null) {
@@ -33,7 +40,7 @@ public class ZFL extends JavaPlugin {
                     updateLeaves(world);
                 }
             }
-        }, 0L, 2L);
+        }, 0L, 2L).getTaskId();
     }
 
     @Override
@@ -47,51 +54,71 @@ public class ZFL extends JavaPlugin {
         ConfigurationSection worldsSection = getConfig().getConfigurationSection("worlds");
 
         if (worldsSection == null) {
-            // ถ้าไม่มีการตั้งค่าโลก ให้ใช้ค่าเริ่มต้นสำหรับโลกหลัก
-            WorldLeafConfig defaultConfig = new WorldLeafConfig(
-                    10, 70, 100,
-                    0.02, 0.05, 0.01, 0.03,
-                    0.5, 2.0
-            );
-            worldConfigs.put("world", defaultConfig);
-
-            // สร้างตัวอย่าง config
-            getConfig().set("worlds.world.enabled", true);
-            getConfig().set("worlds.world.amount", 10);
-            getConfig().set("worlds.world.min-height", 70);
-            getConfig().set("worlds.world.max-height", 100);
-            getConfig().set("worlds.world.fall-speed-min", 0.02);
-            getConfig().set("worlds.world.fall-speed-max", 0.05);
-            getConfig().set("worlds.world.wind-speed-min", 0.01);
-            getConfig().set("worlds.world.wind-speed-max", 0.03);
-            getConfig().set("worlds.world.size-min", 0.5);
-            getConfig().set("worlds.world.size-max", 2.0);
-            saveConfig();
+            createDefaultWorldConfig();
             return;
         }
 
         for (String worldName : worldsSection.getKeys(false)) {
             ConfigurationSection worldSection = worldsSection.getConfigurationSection(worldName);
-            if (worldSection == null) continue;
+            if (worldSection == null || !worldSection.getBoolean("enabled", true)) continue;
 
-            // ตรวจสอบว่าเปิดใช้งานโลกนี้หรือไม่
-            if (!worldSection.getBoolean("enabled", true)) continue;
-
-            WorldLeafConfig config = new WorldLeafConfig(
-                    worldSection.getInt("amount", 10),
-                    worldSection.getDouble("min-height", 70),
-                    worldSection.getDouble("max-height", 100),
-                    worldSection.getDouble("fall-speed-min", 0.02),
-                    worldSection.getDouble("fall-speed-max", 0.05),
-                    worldSection.getDouble("wind-speed-min", 0.01),
-                    worldSection.getDouble("wind-speed-max", 0.03),
-                    worldSection.getDouble("size-min", 0.5),
-                    worldSection.getDouble("size-max", 2.0)
-            );
-
-            worldConfigs.put(worldName, config);
-            activeLeavesByWorld.put(worldName, new ArrayList<>());
+            try {
+                WorldLeafConfig config = createWorldLeafConfig(worldSection);
+                worldConfigs.put(worldName, config);
+                activeLeavesByWorld.put(worldName, new ArrayList<>());
+            } catch (IllegalArgumentException e) {
+                logger.warning("Invalid config for world " + worldName + ": " + e.getMessage());
+            }
         }
+    }
+
+    private WorldLeafConfig createWorldLeafConfig(ConfigurationSection worldSection) {
+        return new WorldLeafConfig(
+                validateIntConfig(worldSection, "amount", 10),
+                validateDoubleConfig(worldSection, "min-height", 70),
+                validateDoubleConfig(worldSection, "max-height", 100),
+                validateDoubleConfig(worldSection, "fall-speed-min", 0.02),
+                validateDoubleConfig(worldSection, "fall-speed-max", 0.05),
+                validateDoubleConfig(worldSection, "wind-speed-min", 0.01),
+                validateDoubleConfig(worldSection, "wind-speed-max", 0.03),
+                validateDoubleConfig(worldSection, "size-min", 0.5),
+                validateDoubleConfig(worldSection, "size-max", 2.0)
+        );
+    }
+
+    private int validateIntConfig(ConfigurationSection section, String path, int defaultValue) {
+        int value = section.getInt(path, defaultValue);
+        if (value < 0) {
+            logger.warning("Invalid " + path + " value. Using default: " + defaultValue);
+            return defaultValue;
+        }
+        return value;
+    }
+
+    private double validateDoubleConfig(ConfigurationSection section, String path, double defaultValue) {
+        double value = section.getDouble(path, defaultValue);
+        if (value < 0) {
+            logger.warning("Invalid " + path + " value. Using default: " + defaultValue);
+            return defaultValue;
+        }
+        return value;
+    }
+
+    private void createDefaultWorldConfig() {
+        WorldLeafConfig defaultConfig = new WorldLeafConfig(
+                10, 70, 100,
+                0.02, 0.05, 0.01, 0.03,
+                0.5, 2.0
+        );
+        worldConfigs.put("world", defaultConfig);
+
+        ConfigurationSection worldSection = getConfig().createSection("worlds.world");
+        worldSection.set("enabled", true);
+        worldSection.set("amount", 10);
+        worldSection.set("min-height", 70);
+        worldSection.set("max-height", 100);
+
+        saveConfig();
     }
 
     private void clearOldLeaves() {
@@ -118,10 +145,10 @@ public class ZFL extends JavaPlugin {
         List<FallingLeaf> activeLeaves = activeLeavesByWorld.computeIfAbsent(
                 world.getName(), k -> new ArrayList<>());
 
-        int maxLeaves = config.amount * 5;
+        int maxLeaves = config.amount * MAX_LEAVES_MULTIPLIER;
         if (activeLeaves.size() >= maxLeaves) return;
 
-        int leavesToSpawn = random.nextInt(3) + 2;
+        int leavesToSpawn = random.nextInt(MAX_LEAVES_SPAWN - MIN_LEAVES_SPAWN + 1) + MIN_LEAVES_SPAWN;
         for (int i = 0; i < leavesToSpawn; i++) {
             double x = (random.nextDouble() * 200) - 100;
             double z = (random.nextDouble() * 200) - 100;
@@ -198,7 +225,7 @@ public class ZFL extends JavaPlugin {
         location.setPitch(90);
         armorStand.teleport(location);
 
-        Bukkit.getScheduler().runTaskLater(this, armorStand::remove, 100);
+        Bukkit.getScheduler().runTaskLater(this, armorStand::remove, GROUND_REMOVAL_DELAY);
     }
 
     private double randomInRange(double min, double max) {
