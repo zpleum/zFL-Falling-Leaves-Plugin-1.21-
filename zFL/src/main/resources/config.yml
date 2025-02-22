@@ -1,6 +1,8 @@
+### SYSTEM BY ZPLEUM SUD XAO ###
+
 # การตั้งค่าสำหรับแต่ละโลก
 worlds:
-  sakura:
+  Sakura:
     enabled: true
     amount: 20
     min-height: 90
@@ -27,7 +29,7 @@ max-height: 100
 
 # ความเร็วในการตก
 fall-speed-min: 0.05
-fall-speed-max: 0.15
+fall-speed-max: 0.20
 
 # ความเร็วลม
 wind-speed-min: 0.01
@@ -37,4 +39,4 @@ wind-speed-max: 0.03
 size-min: 0.5
 size-max: 2.0
 
-# SYSTEM BY ZPLEUM SUD XAO
+### SYSTEM BY ZPLEUM SUD XAO ###

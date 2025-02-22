@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -41,12 +42,60 @@ public class ZFL extends JavaPlugin {
                 }
             }
         }, 0L, 2L).getTaskId();
+
+        getLogger().info("");
+        getLogger().info("");
+        getLogger().info("");
+        getLogger().info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        getLogger().info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        getLogger().info("");
+        getLogger().info("");
+        getLogger().info("!!!!!!!!!!!! zFL 1.3 has been enabled! !!!!!!!!!!!!");
+        getLogger().info("!!!!!!!!!!!!!!!!!!!!! HAVE A GOOD DAY !!!!!!!!!!!!!!!!!!!!!");
+        getLogger().info("");
+        getLogger().info("");
+        getLogger().info("!!!!!!!!!!!!! Plugin Developing By zPleum ! !!!!!!!!!!!!!");
+        getLogger().info("!!!!!!!!!!!!! This Version Is Latest (1.3) !!!!!!!!!!!!!!");
+        getLogger().info("");
+        getLogger().info("");
+        getLogger().info("!!!!!!!!!!!!! Contact HTTPS://WIRAPHAT.ONRENDER.COM !!!!!!!!!!!!!");
+        getLogger().info("");
+        getLogger().info("");
+        getLogger().info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        getLogger().info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        getLogger().info("");
+        getLogger().info("");
+        getLogger().info("");
     }
 
     @Override
     public void onDisable() {
         Bukkit.getScheduler().cancelTask(taskId);
         clearOldLeaves();
+
+        getLogger().info("");
+        getLogger().info("");
+        getLogger().info("");
+        getLogger().info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        getLogger().info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        getLogger().info("");
+        getLogger().info("");
+        getLogger().info("!!!!!!!!!!!! zFL 1.3 has been disabled! !!!!!!!!!!!!");
+        getLogger().info("!!!!!!!!!!!!!!!!!!!!!! SEE YOU SOON !!!!!!!!!!!!!!!!!!!!!!");
+        getLogger().info("");
+        getLogger().info("");
+        getLogger().info("!!!!!!!!!!!!! Plugin Developing By zPleum ! !!!!!!!!!!!!!");
+        getLogger().info("!!!!!!!!!!!!! This Version Is Latest (1.3) !!!!!!!!!!!!!!");
+        getLogger().info("");
+        getLogger().info("");
+        getLogger().info("!!!!!!!!!!!!! Contact HTTPS://WIRAPHAT.ONRENDER.COM !!!!!!!!!!!!!");
+        getLogger().info("");
+        getLogger().info("");
+        getLogger().info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        getLogger().info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        getLogger().info("");
+        getLogger().info("");
+        getLogger().info("");
     }
 
     private void loadConfig() {
@@ -199,13 +248,23 @@ public class ZFL extends JavaPlugin {
         while (iterator.hasNext()) {
             FallingLeaf leaf = iterator.next();
 
-            if (leaf.armorStand.isDead() || leaf.armorStand.getLocation().getY() <= config.minHeight) {
-                placeLeafOnGround(leaf.armorStand);
+            if (leaf.armorStand.isDead()) {
                 iterator.remove();
                 continue;
             }
 
             Location currentLocation = leaf.armorStand.getLocation();
+            Location headLocation = currentLocation.clone();
+            // ตรวจสอบตำแหน่งหัวของ ArmorStand
+            Block blockAtHead = headLocation.getBlock();
+
+            // ถ้าบล็อกที่ตำแหน่งหัวไม่ใช่อากาศ (ชนพื้นแล้ว)
+            if (!blockAtHead.getType().isAir()) {
+                placeLeafOnGround(leaf.armorStand);
+                iterator.remove();
+                continue;
+            }
+
             currentLocation.add(leaf.windSpeedX, -leaf.fallSpeed, leaf.windSpeedZ);
             leaf.armorStand.teleport(currentLocation);
 
@@ -222,6 +281,8 @@ public class ZFL extends JavaPlugin {
 
     private void placeLeafOnGround(ArmorStand armorStand) {
         Location location = armorStand.getLocation();
+        // ปรับให้ทะลุลงไปถึงระดับคอ (ประมาณ 1.5 บล็อก)
+        location.subtract(0, 1.5, 0);
         location.setPitch(90);
         armorStand.teleport(location);
 
